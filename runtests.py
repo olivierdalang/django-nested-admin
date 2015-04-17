@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import os
 import sys
+import logging
 
+
+logging.basicConfig(level=logging.DEBUG)
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'nested_admin.tests.settings'
 
@@ -17,7 +20,7 @@ sys.stderr.write('Using Django version %s from %s\n' % (
     os.path.dirname(os.path.abspath(django.__file__))))
 
 def runtests():
-    argv = sys.argv[:1] + ['test', 'nested_admin', '--traceback', '--verbosity=1'] + sys.argv[1:]
+    argv = sys.argv[:1] + ['test', 'nested_admin', '--traceback', '--verbosity=3'] + sys.argv[1:]
     execute_from_command_line(argv)
 
 if __name__ == '__main__':
