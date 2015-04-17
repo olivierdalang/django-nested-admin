@@ -1,9 +1,20 @@
+import sys
 import contextlib
+from unittest import SkipTest
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-
 from django.contrib.admin.tests import AdminSeleniumWebDriverTestCase
+from django.core.servers.basehttp import WSGIRequestHandler
+from django.test import testcases
+
+try:
+    from django.utils.module_loading import import_string
+except ImportError:
+    from django.utils.importlib import import_module
+    import_string = None
+
+testcases.QuietWSGIRequestHandler = WSGIRequestHandler
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import (
@@ -27,6 +38,25 @@ class BaseNestedAdminTestCase(AdminSeleniumWebDriverTestCase):
     ]
 
     webdriver_class = 'selenium.webdriver.phantomjs.webdriver.WebDriver'
+
+    @classmethod
+    def setUpClass(cls):
+        if sys.version_info < (2, 6):
+            raise SkipTest('Selenium Webdriver does not support Python < 2.6.')
+
+        # Import and start the WebDriver class.
+        try:
+            if import_string:
+                WebDriver = import_string(cls.webdriver_class)
+            else:
+                module, attr = cls.webdriver_class.rsplit('.', 1)
+                mod = import_module(module)
+                WebDriver = getattr(mod, attr)
+            cls.selenium = WebDriver(service_log_path='/dev/stdout')
+        except Exception as e:
+            raise SkipTest('Selenium webdriver "%s" not installed or not '
+                           'operational: %s' % (cls.webdriver_class, str(e)))
+        super(AdminSeleniumWebDriverTestCase, cls).setUpClass()
 
     def setUp(self):
         super(BaseNestedAdminTestCase, self).setUp()
