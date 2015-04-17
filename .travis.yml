@@ -11,10 +11,13 @@ env:
     - TOXENV=py34-django17 DJANGO_SELENIUM_TESTS=1
     - TOXENV=py34-django18 DJANGO_SELENIUM_TESTS=1
 
+before_install:
+    - sudo apt-get install strace
+
 install:
     - pip install tox 
 
 script:
-    - travis_retry tox
+    - sudo tox
 
-sudo: false
+sudo: required
